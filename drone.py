@@ -1,5 +1,5 @@
 import heapq
-
+import matplotlib.pyplot as plt
 # Define a function to read building heights from a .txt file and create a map.
 def load_map(filename):
     building_map = []
@@ -28,6 +28,7 @@ def astar_search(building_map, start, goal, height_standard):
     g_score[start] = 0
 
     # Set the height of the goal building to -1 in the array during runtime
+    building_map[start[0]][start[1]] = -1
     building_map[goal[0]][goal[1]] = -1
 
     while open_list:
@@ -59,12 +60,42 @@ def astar_search(building_map, start, goal, height_standard):
 
     return None  # No path found
 
+def plot(shortest_path, building_map):
+    # Copy the building map to avoid modifying the original
+    path_map = [row.copy() for row in building_map]
+    # Mark the path on the map
+    for coord in shortest_path:
+        path_map[coord[0]][coord[1]] = -2
+
+    # Print the path map
+    # for row in path_map:
+    #     for value in row:
+    #         if value == -1:
+    #             print('G', end=' ')  # Goal
+    #         elif value == -2:
+    #             print('D', end=' ')  # Drone path
+    #         else:
+    #             print(value, end=' ')
+    #     print()  # Move to the next row
+
+    # Plot the graph
+    height = len(building_map)
+    width = len(building_map[0])
+    x = [(coord[1]) for coord in shortest_path]
+    y = [(width - coord[0]) for coord in shortest_path]
+
+    plt.plot(x, y)
+    plt.xlabel('X-axis')
+    plt.ylabel('Y-axis')
+    plt.title('Drone path')
+    plt.show()
+
 # Main function
 def main():
-    building_map = load_map("building_heights.txt")
+    building_map = load_map("test.txt")
     start = (0, 0)
-    goal = (4, 5)  # Adjusted goal coordinates
-    height_standard = 5  # Height standard for the drone
+    goal = (11, 11)  # Adjusted goal coordinates
+    height_standard = 6  # Height standard for the drone
 
     shortest_path = astar_search(building_map, start, goal, height_standard)
 
@@ -72,8 +103,11 @@ def main():
         print("Shortest Path Coordinates:")
         for coord in shortest_path:
             print(coord)
+        plot(shortest_path,building_map)
     else:
         print("No valid path found")
+
+
 
 if __name__ == "__main__":
     main()
