@@ -1,5 +1,7 @@
 import heapq
 import matplotlib.pyplot as plt
+
+
 # Define a function to read building heights from a .txt file and create a map.
 def load_map(filename):
     building_map = []
@@ -9,14 +11,17 @@ def load_map(filename):
             building_map.append(row)
     return building_map
 
+
 # Define a function to check if a given coordinate is within the map boundaries and meets the height standard.
 def is_valid_coord(coord, height, width, height_standard, building_map):
     x, y = coord
     return 0 <= x < height and 0 <= y < width and building_map[x][y] <= height_standard
 
+
 # Define a function to calculate the heuristic (Manhattan distance) from a cell to the goal.
 def heuristic(current, goal):
     return abs(current[0] - goal[0]) + abs(current[1] - goal[1])
+
 
 # Define the A* search algorithm.
 def astar_search(building_map, start, goal, height_standard):
@@ -40,7 +45,7 @@ def astar_search(building_map, start, goal, height_standard):
                 current = came_from[current]
                 path.append(current)
             path.reverse()
-            return path
+            return path, g_score[goal]
 
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
@@ -49,8 +54,11 @@ def astar_search(building_map, start, goal, height_standard):
 
                 neighbor = (current[0] + dx, current[1] + dy)
 
+                # Define cost for diagonal movements
+                cost = 1 if dx == 0 or dy == 0 else 1.5
+
                 if is_valid_coord(neighbor, height, width, height_standard, building_map):
-                    tentative_g_score = g_score[current] + 1
+                    tentative_g_score = g_score[current] + cost
 
                     if tentative_g_score < g_score[neighbor]:
                         came_from[neighbor] = current
@@ -58,14 +66,28 @@ def astar_search(building_map, start, goal, height_standard):
                         f_score = tentative_g_score + heuristic(neighbor, goal)
                         heapq.heappush(open_list, (f_score, neighbor))
 
-    return None  # No path found
+    return None, None  # No path found
 
-def plot(shortest_path, building_map):
+
+def plot(all_paths, building_map, costs):
     # Copy the building map to avoid modifying the original
     path_map = [row.copy() for row in building_map]
-    # Mark the path on the map
-    for coord in shortest_path:
-        path_map[coord[0]][coord[1]] = -2
+
+    # Plot each path with a different color
+    for i, (shortest_path, cost) in enumerate(zip(all_paths, costs)):
+        # Mark the path on the map
+        for coord in shortest_path:
+            path_map[coord[0]][coord[1]] = -2
+
+        # Plot the graph
+        height = len(building_map)
+        width = len(building_map[0])
+        x = [coord[1] for coord in shortest_path]
+        y = [width - coord[0] for coord in shortest_path]
+
+        # Use a different color for each path
+        color = plt.cm.viridis(i / len(all_paths))  # Choose a colormap (viridis in this case)
+        plt.plot(x, y, label=f"Path {i + 1} (Time: {cost})", color=color)
 
     # Print the path map
     # for row in path_map:
@@ -78,35 +100,46 @@ def plot(shortest_path, building_map):
     #             print(value, end=' ')
     #     print()  # Move to the next row
 
-    # Plot the graph
-    height = len(building_map)
-    width = len(building_map[0])
-    x = [(coord[1]) for coord in shortest_path]
-    y = [(width - coord[0]) for coord in shortest_path]
+    # Show legend
+    plt.legend()
 
-    plt.plot(x, y)
+    # Set labels and title
     plt.xlabel('X-axis')
     plt.ylabel('Y-axis')
-    plt.title('Drone path')
+    plt.title('Drone paths')
+
+    # Show the plot
     plt.show()
+
 
 # Main function
 def main():
     building_map = load_map("test.txt")
+    delivery_destinations = [(10, 10), (6, 6), (10, 2)]
     start = (0, 0)
-    goal = (11, 11)  # Adjusted goal coordinates
     height_standard = 6  # Height standard for the drone
 
-    shortest_path = astar_search(building_map, start, goal, height_standard)
+    all_paths = []
+    all_costs = []
+    current_location = start
 
-    if shortest_path:
-        print("Shortest Path Coordinates:")
-        for coord in shortest_path:
-            print(coord)
-        plot(shortest_path,building_map)
+    for destination in delivery_destinations:
+        shortest_path, cost = astar_search(building_map, current_location, destination, height_standard)
+        if shortest_path:
+            all_paths.append(shortest_path)
+            all_costs.append(cost)
+            current_location = destination
+        else:
+            print(f"No valid path to delivery destination: {destination}")
+    for i in range(len(all_costs)):
+        all_costs[i] = (all_costs[i] * 30)/60
+    if all_paths:
+        print("All Delivery Paths:")
+        for i, (path, cost) in enumerate(zip(all_paths, all_costs)):
+            print(f"Delivery {i + 1}: {path} (Time: {cost} minutes)")
+        plot(all_paths, building_map, all_costs)
     else:
-        print("No valid path found")
-
+        print("No valid paths found for deliveries")
 
 
 if __name__ == "__main__":
