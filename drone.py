@@ -115,7 +115,7 @@ def plot(all_paths, building_map, costs):
 # Main function
 def main():
     building_map = load_map("test.txt")
-    delivery_destinations = [(10, 10), (6, 6), (10, 2)]
+    delivery_destinations = [(5, 9), (6, 6), (9, 2)]
     start = (0, 0)
     height_standard = 6  # Height standard for the drone
 
