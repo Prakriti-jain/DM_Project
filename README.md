@@ -1,7 +1,7 @@
 Maze Solver : Drone Path Planning
 
 Introduction
-This project focuses on efficiently navigating drones through a maze-like environment, considering real-world constraints such as building heights, charging points, and limited battery capacity. The core algorithm used for path planning is the A* search algorithm, renowned for its efficiency and optimality.
+The goal of this project is to efficiently guide drones through a maze-like area while taking into account practical limitations like battery capacity, charging points, and building heights. The A* search method, which is well-known for its effectiveness and optimality, is the main algorithm used for path planning.
 
 Usage
 1. Input Map: Provide a map file representing the maze-like environment, with charging points marked as 0.
