@@ -5,12 +5,14 @@ Introduction
 
 The goal of this project is to efficiently guide drones through a maze-like area while taking into account practical limitations like battery capacity, charging points, and building heights. The A* search method, which is well-known for its effectiveness and optimality, is the main algorithm used for path planning.
 
+
 Usage
 
 1. Input Map: Provide a map file representing the maze-like environment, with charging points marked as 0.
 2. Delivery Destinations: Define delivery destinations as a list of coordinates.
 3. Number of Drones: Input the number of drones participating in the delivery system.
 4. Run the Program: Execute the main() function. The program will output delivery paths, time estimates, and final battery levels for each drone.
+
 
 Code Structure
 
