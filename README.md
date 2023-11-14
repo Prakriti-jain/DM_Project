@@ -1,15 +1,19 @@
-Maze Solver : Drone Path Planning
+MAZE SOLVER : DRONE PATH PLANNING
+
 
 Introduction
+
 The goal of this project is to efficiently guide drones through a maze-like area while taking into account practical limitations like battery capacity, charging points, and building heights. The A* search method, which is well-known for its effectiveness and optimality, is the main algorithm used for path planning.
 
 Usage
+
 1. Input Map: Provide a map file representing the maze-like environment, with charging points marked as 0.
 2. Delivery Destinations: Define delivery destinations as a list of coordinates.
 3. Number of Drones: Input the number of drones participating in the delivery system.
 4. Run the Program: Execute the main() function. The program will output delivery paths, time estimates, and final battery levels for each drone.
 
 Code Structure
+
 1. load_map(filename): This function reads a file containing a maze-like map, where 0s represent charging points. It returns a 2D list (building_map) representing the maze and a set of coordinates (charging_points) where drones can recharge.
 
 2. is_valid_coord(coord, height, width, height_standard, building_map): Checks whether a given coordinate is within the maze boundaries (height and width) and doesn't exceed a specified height standard. It also ensures the coordinate does not collide with obstacles in the building_map.
