@@ -87,7 +87,7 @@ def astar_search(building_map, start, goal, height_standard, battery, charging_p
                         f_score = tentative_g_score + heuristic(neighbor, goal)
                         heapq.heappush(open_list, (f_score, neighbor))
 
-    return None, None, 0.0
+    return None, None, b
 
 
 def plot(all_paths, building_map, costs):
