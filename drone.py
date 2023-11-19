@@ -87,7 +87,7 @@ def astar_search(building_map, start, goal, height_standard, battery, charging_p
                         f_score = tentative_g_score + heuristic(neighbor, goal)
                         heapq.heappush(open_list, (f_score, neighbor))
 
-    return None, None, b
+    return None, None, 0.0
 
 
 def plot(all_paths, building_map, costs):
@@ -114,60 +114,91 @@ def plot(all_paths, building_map, costs):
 
 def main():
     building_map, charging_points = load_map("test.txt")
-    delivery_destinations = [(10, 10), (2, 6), (10, 2), (1, 10)]
-    start = (0, 0)
-    height_standard = 6
+    height = len(building_map)
+    width = len(building_map[0])
+
+    print(f"Building Map Dimensions: {width} by {height}")
+
+    print("Enter delivery destinations in the form (e.g., 10 10). Type 'exit' to finish.")
+    delivery_destinations = []
+    while True:
+        n = input().split()
+
+        if n == ['exit']:
+            break
+        else:
+            if int(n[0]) < height and int(n[1]) < width:
+                delivery_destinations.append((int(n[0]), int(n[1])))
+            else:
+                print("Invalid coordinates")
+    height_standard = int(input("Height Standard: "))
     total_drones = int(input("Enter the number of drones (n): "))
 
-    unassigned_destinations = set(delivery_destinations)
+    # Get unique starting points for each drone
+    drone_starting_points = []
+    for i in range(total_drones):
+        while True:
+            try:
+                n = input(f"Enter starting point for Drone {i + 1} in the form (e.g., 0 0): ").split()
+                start_x, start_y = int(n[0]), int(n[1])
+                if 0 <= start_x < width and 0 <= start_y < height:
+                    drone_starting_points.append((start_x, start_y))
+                    break
+                else:
+                    print("Invalid coordinates. Try again.")
+            except (ValueError, IndexError):
+                print("Invalid input. Please enter valid coordinates.")
+
+    unassigned_destinations = list(delivery_destinations)
     assigned_destinations = set()
 
     all_paths = [[] for _ in range(total_drones)]
     all_costs = [[] for _ in range(total_drones)]
-    current_locations = [start] * total_drones
-    batteries = [30] * total_drones
+    battery = int(input("Initial charge of drones"))
+    batteries = [battery] * total_drones
+    completion_times = [0] * total_drones
 
-    # ... (previous code)
+    # Initialize current locations for each drone
+    current_locations = drone_starting_points.copy()
 
-    while unassigned_destinations:
+    for delivery_num in range(len(delivery_destinations)):
         for drone_id in range(total_drones):
-            current_destinations = find_unassigned_destination(unassigned_destinations, assigned_destinations)
-            if current_destinations:
-                current_destination = min(current_destinations,
-                                          key=lambda dest: heuristic(current_locations[drone_id], dest))
-                shortest_path, cost, battery = astar_search(building_map, current_locations[drone_id],
-                                                            current_destination, height_standard, batteries[drone_id],
+
+            # Find the drone with the earliest completion time
+            next_drone_id = min(range(total_drones), key=lambda i: completion_times[i])
+
+            # Assign one destination to the chosen drone
+            if unassigned_destinations:
+                current_destination = unassigned_destinations.pop(0)
+                shortest_path, cost, battery = astar_search(building_map, current_locations[next_drone_id],
+                                                            current_destination, height, batteries[next_drone_id],
                                                             charging_points)
                 if shortest_path:
-                    all_paths[drone_id].append(shortest_path)
-                    all_costs[drone_id].append(cost)
-                    current_locations[drone_id] = current_destination
-                    batteries[drone_id] = battery
+                    all_paths[next_drone_id].append(shortest_path)
+                    all_costs[next_drone_id].append(cost)
+                    current_locations[next_drone_id] = current_destination  # Update current location
+                    batteries[next_drone_id] -= cost  # Deduct battery for the travel cost
                     assigned_destinations.add(current_destination)
-                    unassigned_destinations.remove(current_destination)
+                    completion_times[next_drone_id] += cost
                 else:
-                    print(f"No valid path for Drone {drone_id + 1} to delivery destination: {current_destination}")
+                    print(f"No valid path for Drone {next_drone_id + 1} to delivery destination: {current_destination}")
 
                 # Check for charging after each delivery
-                if current_destination in charging_points and batteries[drone_id] < 100:
-                    batteries[drone_id] = min(batteries[drone_id] + 10, 100)
-                    print(f"Drone {drone_id + 1} charged. Battery: {batteries[drone_id]}%")
+                if current_destination in charging_points and batteries[next_drone_id] < 100:
+                    batteries[next_drone_id] = min(batteries[next_drone_id] + 10, 100)
+                    print(f"Drone {next_drone_id + 1} charged. Battery: {batteries[next_drone_id]}%")
+
+    # ...
 
     for drone_id in range(total_drones):
         for i in range(len(all_costs[drone_id])):
             all_costs[drone_id][i] = (all_costs[drone_id][i] * 30) / 60
 
-    for drone_id in range(total_drones):
-        if all_paths[drone_id]:
-            print(f"All Delivery Paths for Drone {drone_id + 1}:")
-            for i, (path, cost) in enumerate(zip(all_paths[drone_id], all_costs[drone_id])):
-                print(f"Delivery {i + 1}: {path} (Time: {cost} minutes)")
-            print(f"Drone {drone_id + 1} Final Battery: {batteries[drone_id]}%")
+        for i, (path, cost) in enumerate(zip(all_paths[drone_id], all_costs[drone_id])):
+            print(f"Delivery {i + 1} by Drone {drone_id + 1}: {path} (Time: {cost} minutes)")
+        print(f"Drone {drone_id + 1} Final Battery: {batteries[drone_id]}%")
 
-            plot(all_paths[drone_id], building_map, all_costs[drone_id])
-        else:
-            print(f"No valid paths found for deliveries by Drone {drone_id + 1}")
-
+        plot(all_paths[drone_id], building_map, all_costs[drone_id])
 
 if __name__ == "__main__":
     main()
