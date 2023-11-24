@@ -188,7 +188,6 @@ def main():
                     batteries[next_drone_id] = min(batteries[next_drone_id] + 10, 100)
                     print(f"Drone {next_drone_id + 1} charged. Battery: {batteries[next_drone_id]}%")
 
-    # ...
 
     for drone_id in range(total_drones):
         for i in range(len(all_costs[drone_id])):
